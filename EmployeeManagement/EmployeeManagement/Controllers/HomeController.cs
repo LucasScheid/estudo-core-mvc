@@ -1,5 +1,6 @@
 ﻿using EmployeeManagement.Models;
 using EmployeeManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ using System.IO;
 
 namespace EmployeeManagement.Controllers
 {
+    //[Authorize]
     public class HomeController : Controller
     {
         private readonly IEmployeeRepository _employeeRepository;
@@ -21,10 +23,9 @@ namespace EmployeeManagement.Controllers
             _logger = logger;
         }
 
+        [AllowAnonymous]
         public ActionResult Index()
         {
-            //return View(_employeeRepository.GetAllEmployee());
-
             return RedirectToAction("List");
         }
 
@@ -48,7 +49,7 @@ namespace EmployeeManagement.Controllers
 
             return View(homeDetailsViewModel);
         }
-
+        [AllowAnonymous]
         public ViewResult List()
         {
             return View(_employeeRepository.GetAllEmployee());

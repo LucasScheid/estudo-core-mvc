@@ -1,6 +1,10 @@
 using EmployeeManagement.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.CodeAnalysis.Options;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,14 +26,37 @@ namespace EmployeeManagement
         {
             //services.AddMvc();
 
-            //modelo
-            services.AddControllersWithViews();
+           
 
             //services.AddDbContext<AppDBContext>(opt => opt.UseInMemoryDatabase("Database"));
             services.AddDbContext<AppDBContext>(opt => opt.UseSqlServer(_config.GetConnectionString("EmployeeDBConnection")));
 
+            services.Configure<IdentityOptions>(options=> {
+
+                options.Password.RequiredLength = 10;
+                options.Password.RequiredUniqueChars = 3;
+                options.Password.RequireNonAlphanumeric = false;
+            });
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<AppDBContext>();
+
             //services.AddSingleton<IEmployeeRepository, MockEmployeeRepository>();
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
+
+
+            //modelo
+            services.AddControllersWithViews(options=>
+            {
+                var policy = new AuthorizationPolicyBuilder()
+                                .RequireAuthenticatedUser()
+                                .Build();
+
+                options.Filters.Add(new AuthorizeFilter(policy));
+
+
+
+            });
 
         }
 
@@ -45,6 +72,9 @@ namespace EmployeeManagement
             // app.UseRouting();
 
             app.UseStaticFiles();
+            //app.UseAuthorization();
+            app.UseAuthentication();
+            
             app.UseRouting();
             //app.UseMvcWithDefaultRoute();
 
